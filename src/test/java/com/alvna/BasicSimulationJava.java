@@ -22,8 +22,7 @@ public class BasicSimulationJava extends Simulation {
             .pause(5);
 
     {
-        setUp( // 11
-                scn.injectOpen(atOnceUsers(1)) // 12
-        ).protocols(httpProtocol); // 13
+        setUp(scn.injectOpen(atOnceUsers(1)))
+                .protocols(httpProtocol);
     }
 }
