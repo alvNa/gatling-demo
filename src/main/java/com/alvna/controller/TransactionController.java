@@ -4,10 +4,7 @@ import com.alvna.dto.TransactionDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,10 +28,15 @@ public class TransactionController {
     public ResponseEntity<List<TransactionDto>> getTransactions(@PathVariable Long accountId) throws InterruptedException {
         int index = counter.incrementAndGet();
         log.info("getTrans {}",index);
-        if (index % 50 == 0){
-            Thread.sleep(200);
-        }
+//        if (index % 50 == 0){
+//            Thread.sleep(200);
+//        }
         List<TransactionDto> transactions = List.of(); //accountTransactionService.getTransactions(accountId)
         return ResponseEntity.ok(transactions);
+    }
+
+    @PostMapping(TRANSACTIONS_PATH)
+    public void setTransactions(@PathVariable Long accountId) {
+        log.info("setTransactions {}", accountId);
     }
 }

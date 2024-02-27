@@ -13,28 +13,43 @@ public class TransactionSimulation extends Simulation {
     private int users = 500;
     private int interval = 5;
 
-    HttpProtocolBuilder httpProtocol = http
-            .baseUrl(urlBase)
-            .acceptHeader("application/json")
-            //.doNotTrackHeader("1")
-            //.acceptLanguageHeader("en-US,en;q=0.5")
-            //.acceptEncodingHeader("gzip, deflate")
-            //.userAgentHeader("Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0")
-            ;
-
-    ScenarioBuilder scn;
-
     {
-        scn = scenario("Transaction Scenario")
+        var httpProtocol = createHttpProtocol();
+        var scenario = createScenario();
+        setUpSimulation(httpProtocol, scenario);
+    }
+
+    private HttpProtocolBuilder createHttpProtocol(){
+        return http
+                .baseUrl(urlBase)
+                .acceptHeader("application/json")
+                .contentTypeHeader("application/json")
+                .check(status().is(200));
+    }
+
+    private ScenarioBuilder createScenario() {
+        return scenario("Transaction Scenario")
                 .exec(http("Get transactions")
                         .get("/accounts/12345/transactions"))
                 .pause(interval)
-                .exec(http("Get transactions 2")
-                        .get("/accounts/67890/transactions"))
-                .pause(interval)
-        ;
-        setUp(
-                scn.injectOpen(atOnceUsers(users))
-        ).protocols(httpProtocol);
+                .exec(http("Post transaction")
+                        .post("/accounts/67890/transactions"))
+                .pause(interval);
     }
+
+    private void setUpSimulation(HttpProtocolBuilder httpProtocol, ScenarioBuilder scn) {
+        setUp(scn.injectOpen(atOnceUsers(users)))
+                .protocols(httpProtocol)
+                .assertions(
+                        global().responseTime().max().lt(600),
+                        global().successfulRequests().percent().gt(95.0),
+                        global().responseTime().max().lt(5000),
+                        global().responseTime().mean().lt(20),
+                        global().responseTime().percentile1().lt(20),
+                        global().responseTime().percentile2().lt(30),
+                        global().responseTime().percentile3().lt(40),
+                        global().responseTime().percentile4().lt(2000)
+                );
+    }
+
 }
